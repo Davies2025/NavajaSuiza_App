@@ -272,7 +272,7 @@ private fun SportsActivityDropdown(
 fun RegistroScreenPreview() {
     val fakeUiState = RegistrationUiState(
         email = "explorador@email.com",
-        fullName = "Juan Aventura",
+        fullName = "DAVID ERAZO",
         sportsActivity = "Senderismo"
     )
     NavajaSuizaTheme {

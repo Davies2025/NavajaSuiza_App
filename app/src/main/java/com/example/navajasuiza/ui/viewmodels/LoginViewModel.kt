@@ -2,6 +2,7 @@ package com.example.navajasuiza.ui.viewmodels
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.navajasuiza.data.entities.User // <-- Se necesita este import
 import com.example.navajasuiza.data.repository.UserRepository
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -12,15 +13,14 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-
 data class LoginUiState(
     val email: String = "",
     val password: String = ""
 )
 
-
 sealed class LoginEvent {
-    data object Success : LoginEvent()
+
+    data class Success(val user: User) : LoginEvent()
     data class Error(val message: String) : LoginEvent()
 }
 
@@ -52,10 +52,10 @@ class LoginViewModel(private val repository: UserRepository) : ViewModel() {
         viewModelScope.launch {
             val user = repository.loginUser(state.email.trim(), state.password)
             if (user != null) {
-                // El usuario y contraseña son correctos
-                sendEvent(LoginEvent.Success)
+
+                sendEvent(LoginEvent.Success(user))
             } else {
-                // No se encontró el usuario
+
                 sendEvent(LoginEvent.Error("Correo o contraseña incorrectos."))
             }
         }
@@ -67,4 +67,7 @@ class LoginViewModel(private val repository: UserRepository) : ViewModel() {
         }
     }
 }
+
+
+
 

@@ -1,45 +1,83 @@
 package com.example.navajasuiza.ui.navigation
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.Text
+import android.app.Application
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalSavedStateRegistryOwner
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.navajasuiza.ui.screens.AboutScreen // <-- NUEVO IMPORT
+import androidx.navigation.navArgument
+import com.example.navajasuiza.ui.screens.AboutScreen
+import com.example.navajasuiza.ui.screens.DashboardScreen
 import com.example.navajasuiza.ui.screens.LoginScreen
 import com.example.navajasuiza.ui.screens.RegistroScreen
+import com.example.navajasuiza.ui.screens.EstacionScreen
+import com.example.navajasuiza.ui.screens.DatosClimaScreen
+import com.example.navajasuiza.ui.theme.NavajaSuizaTheme
+import com.example.navajasuiza.ui.viewmodels.DashboardViewModel
+import com.example.navajasuiza.ui.viewmodels.ThemeViewModel
 
 @Composable
 fun AppNavigation() {
     val navController = rememberNavController()
-    NavHost(
-        navController = navController,
-        startDestination = AppScreen.LoginScreen.route
-    ) {
-        // Ruta para la pantalla de Login
-        composable(route = AppScreen.LoginScreen.route) {
-            LoginScreen(navController = navController)
-        }
+    val application = LocalContext.current.applicationContext as Application
 
-        // Ruta para la pantalla de Registro
-        composable(route = AppScreen.RegistroScreen.route) {
-            RegistroScreen(navController = navController)
-        }
 
-        // Ruta para la pantalla principal (Dashboard) después del login
-        composable(route = AppScreen.DashboardScreen.route) {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text("¡Bienvenido! Dashboard en construcción.")
+    val themeViewModel: ThemeViewModel = viewModel(factory = ThemeViewModel.Factory(application))
+    val themeUiState by themeViewModel.uiState.collectAsState()
+
+    NavajaSuizaTheme(darkTheme = themeUiState.isDarkTheme) {
+        NavHost(
+            navController = navController,
+            startDestination = AppScreen.LoginScreen.route
+        ) {
+            composable(route = AppScreen.LoginScreen.route) {
+                LoginScreen(navController = navController)
             }
-        }
 
-        // --- RUTA AÑADIDA PARA LA PANTALLA "ACERCA DE" ---
-        composable(route = AppScreen.AboutScreen.route) {
-            AboutScreen(navController = navController)
+            composable(route = AppScreen.RegistroScreen.route) {
+                RegistroScreen(navController = navController)
+            }
+
+            composable(
+                route = AppScreen.DashboardScreen.route,
+                arguments = listOf(navArgument("userId") { type = NavType.IntType })
+            ) { backStackEntry ->
+
+
+                val dashboardViewModel: DashboardViewModel = viewModel(
+                    factory = DashboardViewModel.Factory(
+                        application,
+                        LocalSavedStateRegistryOwner.current,
+                        backStackEntry.arguments
+                    )
+                )
+                DashboardScreen(navController = navController, viewModel = dashboardViewModel)
+            }
+
+            composable(route = AppScreen.AboutScreen.route) {
+                AboutScreen(navController = navController)
+            }
+
+            composable(route = AppScreen.EstacionScreen.route) { // LA RUTA ES DEL 14 DE OCTUBRE
+
+                EstacionScreen(
+                    navController = navController,
+                    themeViewModel = themeViewModel
+                )
+            }
+
+            composable(route = AppScreen.DatosClimaScreen.route) {
+                DatosClimaScreen(navController = navController)
+            }
         }
     }
 }
+
+
+

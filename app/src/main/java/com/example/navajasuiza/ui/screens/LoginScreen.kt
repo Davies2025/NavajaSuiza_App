@@ -1,5 +1,6 @@
 package com.example.navajasuiza.ui.screens
 
+import android.app.Application
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -27,32 +28,38 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.navajasuiza.R
-import com.example.navajasuiza.data.AppDatabase
-import com.example.navajasuiza.data.repository.UserRepository
 import com.example.navajasuiza.ui.navigation.AppScreen
 import com.example.navajasuiza.ui.theme.NavajaSuizaTheme
 import com.example.navajasuiza.ui.viewmodels.LoginEvent
 import com.example.navajasuiza.ui.viewmodels.LoginUiState
 import com.example.navajasuiza.ui.viewmodels.LoginViewModel
-import com.example.navajasuiza.ui.viewmodels.LoginViewModelFactory
+import com.example.navajasuiza.ui.viewmodels.ViewModelFactoryProvider
 
 @Composable
 fun LoginScreen(navController: NavController) {
     val context = LocalContext.current
+    val application = context.applicationContext as Application
+
+
     if (context.javaClass.simpleName != "PreviewContext") {
-        val db = AppDatabase.getInstance(context)
-        val repository = UserRepository(db.userDao())
-        val factory = LoginViewModelFactory(repository)
-        val viewModel: LoginViewModel = viewModel(factory = factory)
+
+
+        val viewModel: LoginViewModel = viewModel(
+            factory = ViewModelFactoryProvider.getLoginViewModelFactory(application)
+        )
+
+
         val uiState by viewModel.uiState.collectAsState()
 
-        LaunchedEffect(key1 = true) {
+
+        LaunchedEffect(Unit) {
             viewModel.loginEvent.collect { event ->
                 when (event) {
                     is LoginEvent.Success -> {
                         Toast.makeText(context, "¡Bienvenido!", Toast.LENGTH_SHORT).show()
-                        navController.navigate(AppScreen.DashboardScreen.route) {
+                        navController.navigate(AppScreen.DashboardScreen.createRoute(event.user.id)) {
                             popUpTo(navController.graph.startDestinationId) { inclusive = true }
+                            launchSingleTop = true
                         }
                     }
                     is LoginEvent.Error -> {
@@ -62,16 +69,25 @@ fun LoginScreen(navController: NavController) {
             }
         }
 
+
         LoginScreenContent(
             uiState = uiState,
             onEmailChange = viewModel::onEmailChange,
             onPasswordChange = viewModel::onPasswordChange,
             onLoginClick = viewModel::onLoginClicked,
             onRegisterClick = { navController.navigate(AppScreen.RegistroScreen.route) },
-            onAboutClick = { navController.navigate(AppScreen.AboutScreen.route) }
+            onAboutClick = { navController.navigate(AppScreen.AboutScreen.route) },
+            onGuestClick = {
+                navController.navigate(AppScreen.DashboardScreen.createRoute(-1)) {
+                    popUpTo(navController.graph.startDestinationId) { inclusive = true }
+                    launchSingleTop = true
+                }
+            }
         )
     }
 }
+
+
 
 @Composable
 fun LoginScreenContent(
@@ -80,7 +96,8 @@ fun LoginScreenContent(
     onPasswordChange: (String) -> Unit,
     onLoginClick: () -> Unit,
     onRegisterClick: () -> Unit,
-    onAboutClick: () -> Unit
+    onAboutClick: () -> Unit,
+    onGuestClick: () -> Unit
 ) {
     Box(modifier = Modifier.fillMaxSize()) {
         Image(
@@ -102,7 +119,9 @@ fun LoginScreenContent(
                 Image(
                     painter = painterResource(id = R.drawable.logo_de_app),
                     contentDescription = "Logo de la app",
-                    modifier = Modifier.size(150.dp).padding(bottom = 32.dp)
+                    modifier = Modifier
+                        .size(150.dp)
+                        .padding(bottom = 32.dp)
                 )
 
                 Column(
@@ -131,25 +150,52 @@ fun LoginScreenContent(
                     Spacer(modifier = Modifier.height(32.dp))
                     Button(
                         onClick = onLoginClick,
-                        modifier = Modifier.fillMaxWidth().height(50.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(50.dp),
                         shape = RoundedCornerShape(12.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF3E4932), contentColor = Color.White)
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(0xFF3E4932),
+                            contentColor = Color.White
+                        )
                     ) {
                         Text(text = "INICIAR SESIÓN", fontWeight = FontWeight.Bold, fontSize = 16.sp)
                     }
                 }
 
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
                 Button(
                     onClick = onRegisterClick,
-                    modifier = Modifier.fillMaxWidth().height(50.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(50.dp),
                     shape = RoundedCornerShape(12.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF291D0A), contentColor = Color.White)
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFF291D0A),
+                        contentColor = Color.White
+                    )
                 ) {
                     Text(text = "REGISTRO", fontWeight = FontWeight.Bold, fontSize = 16.sp)
                 }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Button(
+                    onClick = onGuestClick,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(50.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFF3E4932),
+                        contentColor = Color.White
+                    )
+                ) {
+                    Text(text = "INVITADO", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                }
             }
+
             TextButton(onClick = onAboutClick) {
                 Text(text = "ACERCA DE", color = Color.White, fontWeight = FontWeight.Bold)
             }
@@ -167,7 +213,11 @@ private fun LoginTextField(
     isPassword: Boolean = false
 ) {
     Column(modifier = Modifier.fillMaxWidth()) {
-        Text(text = label, color = Color.White, modifier = Modifier.padding(start = 8.dp, bottom = 4.dp))
+        Text(
+            text = label,
+            color = Color.White,
+            modifier = Modifier.padding(start = 8.dp, bottom = 4.dp)
+        )
         OutlinedTextField(
             value = value,
             onValueChange = onValueChange,
@@ -195,7 +245,6 @@ private fun LoginTextField(
     }
 }
 
-
 @Preview(showBackground = true)
 @Composable
 fun LoginScreenPreview() {
@@ -206,7 +255,8 @@ fun LoginScreenPreview() {
             onPasswordChange = {},
             onLoginClick = {},
             onRegisterClick = {},
-            onAboutClick = {}
+            onAboutClick = {},
+            onGuestClick = {}
         )
     }
 }

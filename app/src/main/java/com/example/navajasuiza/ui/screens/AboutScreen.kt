@@ -33,7 +33,7 @@ fun AboutScreen(navController: NavController) {
     Box(
         modifier = Modifier.fillMaxSize()
     ) {
-        // Fondo de imagen
+
         Image(
             painter = painterResource(id = R.drawable.fondos),
             contentDescription = null,
