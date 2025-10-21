@@ -60,9 +60,6 @@ class SensorController(context: Context) : SensorEventListener {
         sensorManager.unregisterListener(this)
     }
 
-    override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
-        // No es necesario, pero es una practica.
-    }
 
 
     override fun onSensorChanged(event: SensorEvent) {
@@ -77,8 +74,30 @@ class SensorController(context: Context) : SensorEventListener {
             Sensor.TYPE_PROXIMITY -> proximityChannel.trySend(event.values[0]) // SE HIZO el Viernes 17
         }
     }
+
+
+
+
+
+
+    override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
+        // No es necesario, pero es una practica.
+    }
+
+
+
+
+
+
+
 }
 
+
+/*
+override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
+        // No es necesario, pero es una practica.
+    }
+ */
 
 
 
