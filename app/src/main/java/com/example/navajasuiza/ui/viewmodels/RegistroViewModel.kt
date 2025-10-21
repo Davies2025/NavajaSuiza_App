@@ -16,9 +16,10 @@ import kotlinx.coroutines.launch
 data class RegistrationUiState(
     val email: String = "",
     val fullName: String = "",
-    val sportsActivity: String = "Ninguna",
+    val sportsActivity: String = "",
     val password: String = "",
-    val confirmPassword: String = ""
+    val confirmPassword: String = "",
+    val isRegistrationSuccessful: Boolean = false
 )
 
 class RegistroViewModel(private val repository: UserRepository) : ViewModel() {
@@ -77,7 +78,6 @@ class RegistroViewModel(private val repository: UserRepository) : ViewModel() {
             return
         }
 
-
         viewModelScope.launch {
             try {
                 repository.registerUser(
@@ -87,11 +87,16 @@ class RegistroViewModel(private val repository: UserRepository) : ViewModel() {
                     password = state.password
                 )
                 sendMessage("¡Usuario registrado correctamente!")
+                _uiState.update { it.copy(isRegistrationSuccessful = true) }
             } catch (e: Exception) {
 
                 sendMessage("El correo electrónico ya está en uso.")
             }
         }
+
+
+
+
     }
 
     private fun sendMessage(message: String) {
@@ -100,4 +105,6 @@ class RegistroViewModel(private val repository: UserRepository) : ViewModel() {
         }
     }
 }
+
+
 

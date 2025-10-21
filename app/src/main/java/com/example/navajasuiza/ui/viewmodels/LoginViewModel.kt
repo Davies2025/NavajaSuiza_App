@@ -2,7 +2,7 @@ package com.example.navajasuiza.ui.viewmodels
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.navajasuiza.data.entities.User // <-- Se necesita este import
+import com.example.navajasuiza.data.entities.User
 import com.example.navajasuiza.data.repository.UserRepository
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -43,7 +43,7 @@ class LoginViewModel(private val repository: UserRepository) : ViewModel() {
     fun onLoginClicked() {
         val state = _uiState.value
 
-        // Validación de campos vacíos
+
         if (state.email.isBlank() || state.password.isBlank()) {
             sendEvent(LoginEvent.Error("Por favor, ingresa correo y contraseña."))
             return

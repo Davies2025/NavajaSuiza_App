@@ -17,12 +17,17 @@ class LocationProvider(private val context: Context) {
 
     @SuppressLint("MissingPermission")
     suspend fun getCurrentLocation(): LocationDetails? {
-        val hasPermission = ContextCompat.checkSelfPermission(
+        val hasFineLocationPermission = ContextCompat.checkSelfPermission(
+            context,
+            Manifest.permission.ACCESS_FINE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED
+
+        val hasCoarseLocationPermission = ContextCompat.checkSelfPermission(
             context,
             Manifest.permission.ACCESS_COARSE_LOCATION
         ) == PackageManager.PERMISSION_GRANTED
 
-        if (!hasPermission) {
+        if (!hasFineLocationPermission && !hasCoarseLocationPermission) {
             return null
         }
 
@@ -31,9 +36,7 @@ class LocationProvider(private val context: Context) {
                 if (location != null) {
                     continuation.resume(LocationDetails(location.latitude, location.longitude))
                 } else {
-                    // Si la última ubicación no está disponible, solicitamos una nueva
                     val locationRequest = LocationRequest.Builder(
-
                         Priority.PRIORITY_BALANCED_POWER_ACCURACY, 5000
                     )
                         .setWaitForAccurateLocation(false)

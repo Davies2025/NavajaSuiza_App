@@ -18,6 +18,7 @@ import com.example.navajasuiza.ui.screens.LoginScreen
 import com.example.navajasuiza.ui.screens.RegistroScreen
 import com.example.navajasuiza.ui.screens.EstacionScreen
 import com.example.navajasuiza.ui.screens.DatosClimaScreen
+import com.example.navajasuiza.ui.screens.ProximityScreen
 import com.example.navajasuiza.ui.theme.NavajaSuizaTheme
 import com.example.navajasuiza.ui.viewmodels.DashboardViewModel
 import com.example.navajasuiza.ui.viewmodels.ThemeViewModel
@@ -74,6 +75,10 @@ fun AppNavigation() {
 
             composable(route = AppScreen.DatosClimaScreen.route) {
                 DatosClimaScreen(navController = navController)
+            }
+
+            composable(route = AppScreen.ProximityScreen.route) {
+                ProximityScreen(navController = navController, themeViewModel = themeViewModel)
             }
         }
     }

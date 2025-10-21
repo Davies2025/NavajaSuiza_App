@@ -15,6 +15,8 @@ sealed class AppScreen(val route: String) {
     object EstacionScreen : AppScreen("estacion_screen")
 
     object DatosClimaScreen : AppScreen("datos_clima_screen")
+
+    object ProximityScreen : AppScreen("proximity_screen") //nueva
 }
 
 

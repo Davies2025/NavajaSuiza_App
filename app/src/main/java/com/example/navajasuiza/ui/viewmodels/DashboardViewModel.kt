@@ -53,7 +53,7 @@ class DashboardViewModel(
         Log.d("DashboardViewModel", "ViewModel INICIADO con userId: $userId")
 
         loadUser()
-        startSensorListeners() // Activamos la lógica de los sensores
+        startSensorListeners()
     }
 
     private fun loadUser() {
@@ -73,10 +73,7 @@ class DashboardViewModel(
     }
 
     private fun startSensorListeners() {
-
         sensorController.startListening()
-
-
         viewModelScope.launch {
             sensorController.accelerometerFlow
                 .combine(sensorController.magnetometerFlow) { accel, magnet ->
@@ -88,11 +85,14 @@ class DashboardViewModel(
                         SensorManager.getOrientation(rotationMatrix, orientationAngles)
                         val azimuthDegrees = Math.toDegrees(orientationAngles[0].toDouble()).toFloat()
 
+                        val positiveAzimuth = (azimuthDegrees + 360) % 360
+
                         _uiState.update {
                             it.copy(
 
                                 compassRotation = azimuthDegrees,
-                                angleText = "${azimuthDegrees.toInt()}°",
+
+                                angleText = "${positiveAzimuth.toInt()}°",
                                 cardinalPoint = getCardinalPoint(azimuthDegrees)
                             )
                         }
@@ -109,10 +109,8 @@ class DashboardViewModel(
     }
 
     private fun getCardinalPoint(degrees: Float): String {
-
         val adjustedDegrees = (degrees + 360) % 360
         val directions = arrayOf("N", "NE", "E", "SE", "S", "SW", "O", "NO")
-
         val index = ((adjustedDegrees + 22.5) / 45).toInt() % 8
         return directions[index]
     }
@@ -136,6 +134,7 @@ class DashboardViewModel(
             }
     }
 }
+
 
 
 

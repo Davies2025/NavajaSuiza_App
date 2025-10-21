@@ -101,8 +101,8 @@ fun LoginScreenContent(
 ) {
     Box(modifier = Modifier.fillMaxSize()) {
         Image(
-            painter = painterResource(id = R.drawable.fondos),
-            contentDescription = "Fondo de montaña",
+            painter = painterResource(id = R.drawable.imagen_login),
+            contentDescription = "Fondo de Bosque",
             modifier = Modifier.fillMaxSize(),
             contentScale = ContentScale.Crop
         )
@@ -117,7 +117,7 @@ fun LoginScreenContent(
         ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Image(
-                    painter = painterResource(id = R.drawable.logo_de_app),
+                    painter = painterResource(id = R.drawable.logo_app),
                     contentDescription = "Logo de la app",
                     modifier = Modifier
                         .size(150.dp)
@@ -155,7 +155,7 @@ fun LoginScreenContent(
                             .height(50.dp),
                         shape = RoundedCornerShape(12.dp),
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(0xFF3E4932),
+                            containerColor = Color(0xFF2E4117),
                             contentColor = Color.White
                         )
                     ) {
@@ -260,13 +260,4 @@ fun LoginScreenPreview() {
         )
     }
 }
-
-
-
-
-
-
-
-
-
 

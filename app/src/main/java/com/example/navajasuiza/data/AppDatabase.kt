@@ -24,7 +24,6 @@ abstract class AppDatabase : RoomDatabase() {
                     "app_database"
                 ).build()
                 INSTANCE = instance
-                // Devuelve la instancia recién creada
                 instance
             }
         }

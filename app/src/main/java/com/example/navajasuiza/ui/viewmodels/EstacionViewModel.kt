@@ -1,6 +1,8 @@
 package com.example.navajasuiza.ui.viewmodels
 
 import android.app.Application
+import android.content.Context
+import android.location.LocationManager
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.navajasuiza.sensors.SensorController
@@ -17,16 +19,17 @@ import java.net.URL
 import java.text.SimpleDateFormat
 import java.util.*
 
-data class SensorData(
-    val temperature: String = "PRUEBA",
-    val pressure: String = "PRUEBA"
+data class HardwareSensorData(
+    val pressure: String = "Cargando",
+    val lightValue: String = "Cargando",
+    val lightDescription: String = "Cargando"
 )
-
 
 sealed class ApiDataState {
     object Idle : ApiDataState()
     object Loading : ApiDataState()
     data class Success(
+        val temperature: String,
         val humidity: String,
         val sunrise: String,
         val sunset: String
@@ -34,12 +37,11 @@ sealed class ApiDataState {
     data class Error(val message: String) : ApiDataState()
 }
 
-
 data class EstacionUiState(
-    val sensorData: SensorData = SensorData(),
-    val apiDataState: ApiDataState = ApiDataState.Idle
+    val hardwareSensorData: HardwareSensorData = HardwareSensorData(),
+    val apiDataState: ApiDataState = ApiDataState.Idle,
+    val shouldRequestLocationEnable: Boolean = false
 )
-
 
 class EstacionViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -50,21 +52,24 @@ class EstacionViewModel(application: Application) : AndroidViewModel(application
     private val sensorController = SensorController(application)
 
     init {
-
         listenToAllSensors()
     }
 
 
     fun onPermissionResult(isGranted: Boolean) {
         if (isGranted) {
-            loadApiData()
+            if (isLocationEnabled()) {
+                loadApiData()
+            } else {
+                _uiState.update { it.copy(shouldRequestLocationEnable = true) }
+            }
         } else {
             _uiState.update { it.copy(apiDataState = ApiDataState.Error("El permiso de ubicación es necesario.")) }
         }
     }
 
 
-    private fun loadApiData() {
+    fun loadApiData() {
         viewModelScope.launch {
             _uiState.update { it.copy(apiDataState = ApiDataState.Loading) }
             val location = locationProvider.getCurrentLocation()
@@ -73,47 +78,76 @@ class EstacionViewModel(application: Application) : AndroidViewModel(application
                 return@launch
             }
 
-
             val result = withContext(Dispatchers.IO) {
                 try {
-                    val apiKey = "5b88b6a1d974644221e80a172fbf9e04" // Tu API Key
+                    val apiKey = "5b8bb6a1d974644221e80a172fbf0e04"
                     val url = "https://api.openweathermap.org/data/2.5/weather?lat=${location.latitude}&lon=${location.longitude}&appid=$apiKey&units=metric&lang=es"
                     val apiResultJson = URL(url).readText()
                     val json = JSONObject(apiResultJson)
 
                     val main = json.getJSONObject("main")
                     val sys = json.getJSONObject("sys")
+                    val temp = main.getDouble("temp").toInt()
 
                     ApiDataState.Success(
+                        temperature = "$temp °C",
                         humidity = "${main.getInt("humidity")} %",
                         sunrise = formatTime(sys.getLong("sunrise")),
                         sunset = formatTime(sys.getLong("sunset"))
                     )
                 } catch (e: Exception) {
-                    ApiDataState.Error("Sin conexión a internet.\nMostrando solo datos de sensores.")
+                    ApiDataState.Error("Sin conexión a internet.")
                 }
             }
-
-
             _uiState.update { it.copy(apiDataState = result) }
         }
     }
 
-
     private fun listenToAllSensors() {
         sensorController.startListening()
+
         viewModelScope.launch {
-            sensorController.ambientTemperatureFlow.collect { temp ->
-                _uiState.update { it.copy(sensorData = it.sensorData.copy(temperature = "${temp.toInt()} °C")) }
+            sensorController.pressureFlow.collect { pressure ->
+                _uiState.update { it.copy(hardwareSensorData = it.hardwareSensorData.copy(pressure = "${pressure.toInt()} hPa")) }
             }
         }
         viewModelScope.launch {
-            sensorController.pressureFlow.collect { pressure ->
-                _uiState.update { it.copy(sensorData = it.sensorData.copy(pressure = "${pressure.toInt()} hPa")) }
+            sensorController.lightSensorFlow.collect { lux ->
+                val formattedValue = "${lux.toInt()} lux"
+                val description = interpretLuxValue(lux)
+                _uiState.update {
+                    it.copy(
+                        hardwareSensorData = it.hardwareSensorData.copy(
+                            lightValue = formattedValue,
+                            lightDescription = description
+                        )
+                    )
+                }
             }
         }
     }
 
+    private fun interpretLuxValue(lux: Float): String {
+        return when (lux.toInt()) {
+            0 -> "Oscuridad"
+            in 1..50 -> "Muy oscuro"
+            in 51..500 -> "Interior"
+            in 501..4000 -> "Luz Fuerte"
+            in 4001..15000 -> "Luz indirecta"
+            else -> "Luz solar directa"
+        }
+    }
+
+
+    private fun isLocationEnabled(): Boolean {
+        val locationManager = getApplication<Application>().getSystemService(Context.LOCATION_SERVICE) as LocationManager
+        return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) || locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
+    }
+
+
+    fun onLocationEnableRequestCompleted() {
+        _uiState.update { it.copy(shouldRequestLocationEnable = false) }
+    }
 
     private fun formatTime(timestamp: Long): String {
         val sdf = SimpleDateFormat("h:mm a", Locale.getDefault())
@@ -126,3 +160,29 @@ class EstacionViewModel(application: Application) : AndroidViewModel(application
         sensorController.stopListening()
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -31,6 +31,7 @@ import androidx.navigation.NavController
 import com.example.navajasuiza.R
 import com.example.navajasuiza.data.AppDatabase
 import com.example.navajasuiza.data.repository.UserRepository
+import com.example.navajasuiza.ui.navigation.AppScreen
 import com.example.navajasuiza.ui.theme.NavajaSuizaTheme
 import com.example.navajasuiza.ui.viewmodels.RegistrationUiState
 import com.example.navajasuiza.ui.viewmodels.RegistroViewModel
@@ -52,6 +53,15 @@ fun RegistroScreen(navController: NavController) {
                 Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
             }
         }
+
+        LaunchedEffect(key1 = uiState.isRegistrationSuccessful) {
+            if (uiState.isRegistrationSuccessful) {
+                navController.navigate(AppScreen.LoginScreen.route) {
+                    popUpTo(0)
+                }
+            }
+        }
+
         RegistroScreenContent(
             uiState = uiState,
             onEmailChange = viewModel::onEmailChange,
@@ -77,9 +87,12 @@ fun RegistroScreenContent(
     onRegisterClicked: () -> Unit,
     onBackClicked: () -> Unit
 ) {
+
+    var backButtonEnabled by remember { mutableStateOf(true) }
+
     Box(modifier = Modifier.fillMaxSize()) {
         Image(
-            painter = painterResource(id = R.drawable.fondos),
+            painter = painterResource(id = R.drawable.acerca),
             contentDescription = "Fondo de la pantalla",
             modifier = Modifier.fillMaxSize(),
             contentScale = ContentScale.Crop
@@ -96,7 +109,13 @@ fun RegistroScreenContent(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.Start
             ) {
-                IconButton(onClick = onBackClicked) {
+                IconButton(
+                    onClick = {
+                        backButtonEnabled = false
+                        onBackClicked()
+                    },
+                    enabled = backButtonEnabled
+                ) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                         contentDescription = "Regresar",
@@ -130,7 +149,7 @@ fun RegistroScreenContent(
                     value = uiState.email,
                     onValueChange = onEmailChange,
                     label = "Correo Electrónico",
-                    iconId = R.drawable.usuario,
+                    iconId = R.drawable.gmail,
                     keyboardType = KeyboardType.Email
                 )
                 Spacer(modifier = Modifier.height(16.dp))
@@ -231,25 +250,27 @@ private fun SportsActivityDropdown(
     )
     var expanded by remember { mutableStateOf(false) }
 
+    val placeholderText = "Tocar para seleccionar la actividad"
+    val textColor = if (selectedValue.isBlank()) Color.Gray else Color.Black
+
     Column(modifier = Modifier.fillMaxWidth()) {
         Text(text = "Actividad Deportiva", color = Color.White, modifier = Modifier.padding(start = 8.dp, bottom = 4.dp))
         ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = !expanded }) {
             OutlinedTextField(
-                value = selectedValue,
+                value = if (selectedValue.isBlank()) placeholderText else selectedValue,
                 onValueChange = {},
                 readOnly = true,
                 modifier = Modifier
                     .fillMaxWidth()
                     .menuAnchor(),
                 shape = RoundedCornerShape(12.dp),
-                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = Color(0xFF3E4932),
                     unfocusedBorderColor = Color.Transparent,
                     focusedContainerColor = Color.White,
                     unfocusedContainerColor = Color.White,
                 ),
-                textStyle = TextStyle(color = Color.Black),
+                textStyle = TextStyle(color = textColor),
             )
             ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }, modifier = Modifier.background(Color.White)) {
                 sportsActivities.forEach { activity ->
@@ -273,7 +294,7 @@ fun RegistroScreenPreview() {
     val fakeUiState = RegistrationUiState(
         email = "explorador@email.com",
         fullName = "DAVID ERAZO",
-        sportsActivity = "Senderismo"
+        sportsActivity = ""
     )
     NavajaSuizaTheme {
         RegistroScreenContent(
@@ -288,6 +309,10 @@ fun RegistroScreenPreview() {
         )
     }
 }
+
+
+
+
 
 
 

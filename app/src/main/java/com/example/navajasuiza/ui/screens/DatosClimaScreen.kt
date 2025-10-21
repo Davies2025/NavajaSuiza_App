@@ -7,6 +7,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -16,6 +20,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.navajasuiza.R
+import com.example.navajasuiza.ui.navigation.AppScreen
 
 private val GreenColor = Color(0xFF2E4117)
 private val BlueColor = Color(0xFF1D294E)
@@ -31,9 +36,11 @@ fun DatosClimaScreen(navController: NavController) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .windowInsetsPadding(WindowInsets.statusBars)
                 .padding(16.dp)
                 .verticalScroll(rememberScrollState()),
-            horizontalAlignment = Alignment.CenterHorizontally
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
         ) {
             Header()
             Spacer(modifier = Modifier.height(32.dp))
@@ -55,16 +62,14 @@ fun DatosClimaScreen(navController: NavController) {
                 cardColor = RedColor
             )
 
-
             Spacer(modifier = Modifier.height(32.dp))
 
             ReturnButton(navController = navController)
 
-
-            Spacer(modifier = Modifier.height(16.dp))
         }
     }
 }
+
 
 @Composable
 private fun Header() {
@@ -122,9 +127,17 @@ private fun ClimateInfoCard(
 
 @Composable
 private fun ReturnButton(navController: NavController) {
-    Button(
 
-        onClick = { navController.popBackStack() },
+
+    var buttonEnabled by remember { mutableStateOf(true) }
+
+    Button(
+        onClick = {
+            buttonEnabled = false
+
+            navController.popBackStack()
+        },
+        enabled = buttonEnabled,
         shape = RoundedCornerShape(12.dp),
         colors = ButtonDefaults.buttonColors(containerColor = BrownColor),
         modifier = Modifier.fillMaxWidth(0.8f)
@@ -132,3 +145,5 @@ private fun ReturnButton(navController: NavController) {
         Text(text = "REGRESAR", color = Color.White, fontWeight = FontWeight.Bold)
     }
 }
+
+

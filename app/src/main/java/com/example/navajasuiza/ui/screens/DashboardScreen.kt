@@ -12,11 +12,9 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -36,7 +34,6 @@ import com.example.navajasuiza.ui.viewmodels.DashboardViewModel
 fun DashboardScreen(
     navController: NavController,
     viewModel: DashboardViewModel
-
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
@@ -58,7 +55,6 @@ fun DashboardScreen(
         }
     }
 }
-
 
 @Composable
 private fun WelcomeSection(user: User?) {
@@ -130,10 +126,9 @@ private fun CompassSection(rotation: Float) {
     Card(
         modifier = Modifier
             .fillMaxWidth(0.9f)
-            .aspectRatio(1f)
-            .clip(RoundedCornerShape(24.dp)),
+            .aspectRatio(1f),
         shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+        colors = CardDefaults.cardColors(containerColor = Color(0xFF3E4932))
     ) {
         Box(
             contentAlignment = Alignment.Center,
@@ -141,41 +136,39 @@ private fun CompassSection(rotation: Float) {
                 .fillMaxSize()
                 .padding(16.dp)
         ) {
-
             Image(
-                painter = painterResource(id = R.drawable.modelo_brujula),
+                painter = painterResource(id = R.drawable.brujula_nueva),
                 contentDescription = "Base de la brújula",
                 modifier = Modifier
                     .fillMaxSize()
                     .rotate(animatedRotation)
             )
 
-
             Canvas(modifier = Modifier.fillMaxSize()) {
-                withTransform({
-                    rotate(degrees = animatedRotation, pivot = center)
-                }) {
-                    val redPath = Path().apply {
-                        moveTo(center.x, center.y - size.height * 0.4f)
-                        lineTo(center.x + size.width * 0.05f, center.y)
-                        lineTo(center.x - size.width * 0.05f, center.y)
-                        close()
-                    }
-                    drawPath(path = redPath, color = Color.Red)
-                    val grayPath = Path().apply {
-                        moveTo(center.x, center.y + size.height * 0.4f)
-                        lineTo(center.x + size.width * 0.05f, center.y)
-                        lineTo(center.x - size.width * 0.05f, center.y)
-                        close()
-                    }
-                    drawPath(path = grayPath, color = Color.LightGray)
-                    drawCircle(color = Color.Black, radius = size.width * 0.03f, center = center)
+                val needleLength = size.height * 0.35f
+                val needleWidth = size.width * 0.04f
+
+                val redPath = Path().apply {
+                    moveTo(center.x, center.y - needleLength)
+                    lineTo(center.x + needleWidth, center.y)
+                    lineTo(center.x - needleWidth, center.y)
+                    close()
                 }
+                drawPath(path = redPath, color = Color.Red)
+
+                val grayPath = Path().apply {
+                    moveTo(center.x, center.y + needleLength)
+                    lineTo(center.x + needleWidth, center.y)
+                    lineTo(center.x - needleWidth, center.y)
+                    close()
+                }
+                drawPath(path = grayPath, color = Color.LightGray)
+
+                drawCircle(color = Color.Black, radius = size.width * 0.03f, center = center)
             }
         }
     }
 }
-
 
 @Composable
 private fun InfoCardsRow(uiState: DashboardUiState) {
@@ -233,8 +226,8 @@ private fun ActionButtonsSection(navController: NavController) {
         horizontalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         ActionButton(
-            text = "Cerrar Sesión",
-            iconId = R.drawable.cerrar_sesion,
+            text = "Salir",
+            iconId = R.drawable.sesiones,
             onClick = {
                 navController.navigate(AppScreen.LoginScreen.route) {
                     popUpTo(0) { inclusive = true }
@@ -248,6 +241,13 @@ private fun ActionButtonsSection(navController: NavController) {
             onClick = { navController.navigate(AppScreen.EstacionScreen.route) },
             modifier = Modifier.weight(1f)
         )
+
+        ActionButton(
+            text = "Proximidad",
+            iconId = R.drawable.alerta_prox,
+            onClick = { navController.navigate(AppScreen.ProximityScreen.route) },
+            modifier = Modifier.weight(1f)
+        )
     }
 }
 
@@ -257,38 +257,24 @@ private fun ActionButton(text: String, iconId: Int, onClick: () -> Unit, modifie
         onClick = onClick,
         modifier = modifier.height(IntrinsicSize.Min),
         shape = RoundedCornerShape(16.dp),
-        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
-        contentPadding = PaddingValues(vertical = 12.dp)
+        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2E4117)),
+        contentPadding = PaddingValues(vertical = 16.dp)
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Image(
                 painter = painterResource(id = iconId),
                 contentDescription = text,
-                modifier = Modifier.size(40.dp)
+                modifier = Modifier.size(60.dp)
             )
-            Spacer(modifier = Modifier.height(4.dp))
+            Spacer(modifier = Modifier.height(8.dp))
             Text(
                 text = text,
-                fontSize = 12.sp,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                fontSize = 15.sp,
+                color = Color.White
             )
         }
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

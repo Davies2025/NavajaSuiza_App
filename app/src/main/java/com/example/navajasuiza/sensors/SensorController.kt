@@ -21,6 +21,8 @@ class SensorController(context: Context) : SensorEventListener {
 
     private val pressureSensor = sensorManager.getDefaultSensor(Sensor.TYPE_PRESSURE)
 
+    private val proximitySensor = sensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY)
+
 
     private val accelerometerChannel = Channel<FloatArray>(Channel.UNLIMITED)
     private val magnetometerChannel = Channel<FloatArray>(Channel.UNLIMITED)
@@ -28,6 +30,8 @@ class SensorController(context: Context) : SensorEventListener {
     private val ambientTemperatureChannel = Channel<Float>(Channel.UNLIMITED)
 
     private val pressureChannel = Channel<Float>(Channel.UNLIMITED)
+
+    private val proximityChannel = Channel<Float>(Channel.UNLIMITED)
 
 
 
@@ -38,6 +42,8 @@ class SensorController(context: Context) : SensorEventListener {
 
     val pressureFlow: Flow<Float> = pressureChannel.receiveAsFlow()
 
+    val proximityFlow: Flow<Float> = proximityChannel.receiveAsFlow() //SE HIZO EL JUEVES
+
 
     fun startListening() {
         sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_UI)
@@ -46,6 +52,7 @@ class SensorController(context: Context) : SensorEventListener {
         sensorManager.registerListener(this, ambientTemperatureSensor, SensorManager.SENSOR_DELAY_UI)
 
         sensorManager.registerListener(this, pressureSensor, SensorManager.SENSOR_DELAY_NORMAL)
+        sensorManager.registerListener(this, proximitySensor, SensorManager.SENSOR_DELAY_NORMAL)
     }
 
     fun stopListening() {
@@ -54,7 +61,7 @@ class SensorController(context: Context) : SensorEventListener {
     }
 
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
-        // No es necesario, pero es una practica
+        // No es necesario, pero es una practica.
     }
 
 
@@ -66,6 +73,8 @@ class SensorController(context: Context) : SensorEventListener {
             Sensor.TYPE_AMBIENT_TEMPERATURE -> ambientTemperatureChannel.trySend(event.values[0])
 
             Sensor.TYPE_PRESSURE -> pressureChannel.trySend(event.values[0])
+
+            Sensor.TYPE_PROXIMITY -> proximityChannel.trySend(event.values[0]) // SE HIZO el Viernes 17
         }
     }
 }
